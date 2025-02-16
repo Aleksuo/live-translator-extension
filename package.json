@@ -17,7 +17,9 @@
   "scripts": {
     "dev": "extension dev",
     "start": "extension start",
-    "build": "extension build"
+    "build": "extension build",
+    "format": "npx @biomejs/biome format",
+    "lint": "npx @biomejs/biome lint"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
