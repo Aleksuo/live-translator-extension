@@ -8,18 +8,15 @@
   "name": "live-translator-extension",
   "description": "An Extension.js example.",
   "version": "0.0.1",
-  "keywords": [
-    "extension",
-    "browser-extension",
-    "web-extension",
-    "template"
-  ],
+  "keywords": ["extension", "browser-extension", "web-extension", "template"],
   "scripts": {
     "dev": "extension dev",
     "start": "extension start",
     "build": "extension build",
     "format": "npx @biomejs/biome format",
-    "lint": "npx @biomejs/biome lint"
+    "format:write": "npx @biomejs/biome format --write",
+    "lint": "npx @biomejs/biome lint",
+    "lint:write": "npx @biomejs/biome lint --write"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
