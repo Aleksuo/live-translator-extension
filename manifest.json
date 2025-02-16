@@ -4,5 +4,17 @@
   "version": "1.0",
   "name": "live-translator-extension",
   "description": "A minimum extension template. This template includes a manifest file.",
-  "author": "Your Name"
+  "author": "Your Name",
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "src/popup.html"
+  },
+  "options_ui": {
+    "page": "src/options.html",
+    "open_in_tab": true
+  }
 }

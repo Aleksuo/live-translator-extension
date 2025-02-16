@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Transcribe Options</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="title-container">
+      <h3>Transcribe Tab Audio</h3>
+      <button id="settingsBtn" title="Settings" class="float-right">⚙️</button>
+    </div>
+
+    <div id="transcriptContainer"></div>
+
+    <div id="controls">
+      <button id="startBtn">Start</button>
+      <button id="stopBtn" disabled>Stop</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+
+    <dialog id="settingsDialog">
+      <h4>Settings</h4>
+      <label for="languageSelect">Language:</label>
+      <select id="languageSelect">
+        <option value="en" selected>English</option>
+        <option value="es">Spanish</option>
+        <option value="de">German</option>
+        <option value="fr">French</option>
+        <!-- add more as needed -->
+      </select>
+
+      <div class="dialog-buttons">
+        <button id="cancelSettingsBtn">Cancel</button>
+        <button id="saveSettingsBtn">Save</button>
+      </div>
+    </dialog>
+
+    <script src="options.js"></script>
+  </body>
+</html>
