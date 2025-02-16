@@ -19,8 +19,8 @@
     "start": "extension start",
     "build": "extension build"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "extension": "latest"
   },
   "private": true,
