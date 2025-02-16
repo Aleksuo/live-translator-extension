@@ -76,7 +76,7 @@ function startCapture() {
     })
     .catch((err) => {
       console.error("Could not capture tab:", err);
-      alert("Failed to capture audio: " + err.message);
+      alert(`Failed to capture audio: ${err.message}`);
       resetUI();
     });
 }
@@ -99,7 +99,9 @@ function stopCapture() {
     audioCtx = null;
   }
   if (stream) {
-    stream.getTracks().forEach((t) => t.stop());
+    for (track of stream.getTracks()) {
+      track.stop();
+    }
     stream = null;
   }
   if (ws) {
@@ -150,10 +152,7 @@ function openWebSocket() {
 
   const language = "en";
   const responseFormat = "json";
-  const url =
-    `ws://localhost:8000/v1/audio/transcriptions` +
-    `?language=${encodeURIComponent(language)}` +
-    `&response_format=${encodeURIComponent(responseFormat)}`;
+  const url = `ws://localhost:8000/v1/audio/transcriptions?language=${encodeURIComponent(language)}&response_format=${encodeURIComponent(responseFormat)}`;
 
   ws = new WebSocket(url);
   ws.binaryType = "arraybuffer";
