@@ -8,7 +8,12 @@
   "name": "live-translator-extension",
   "description": "An Extension.js example.",
   "version": "0.0.1",
-  "keywords": ["extension", "browser-extension", "web-extension", "template"],
+  "keywords": [
+    "extension",
+    "browser-extension",
+    "web-extension",
+    "template"
+  ],
   "scripts": {
     "dev": "extension dev",
     "start": "extension start",
@@ -28,5 +33,8 @@
     "name": "Your Name",
     "email": "your@email.com",
     "url": "https://yourwebsite.com"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.3.3"
   }
 }
