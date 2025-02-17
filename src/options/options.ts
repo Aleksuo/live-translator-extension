@@ -1,9 +1,9 @@
 let capturing = false;
-let stream = null;
-let audioCtx = null;
-let processor = null;
-let ws = null;
-let reconnectTimer = null;
+let stream: MediaStream | null = null;
+let audioCtx: AudioContext | null = null;
+let processor: ScriptProcessorNode | null = null;
+let ws: WebSocket | null = null;
+let reconnectTimer: NodeJS.Timeout | null = null;
 let inputBuffer = null;
 let silent = false;
 
@@ -15,31 +15,37 @@ const settings = await chrome.storage.sync.get().then((items) => {
   return { ...defaultSettings, ...items };
 });*/
 
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
-const clearBtn = document.getElementById("clearBtn");
-const transcriptContainer = document.getElementById("transcriptContainer");
+const startBtn = document.getElementById("startBtn") as HTMLButtonElement;
+const stopBtn = document.getElementById("stopBtn") as HTMLButtonElement;
+const clearBtn = document.getElementById("clearBtn") as HTMLButtonElement;
+const transcriptContainer = document.getElementById(
+  "transcriptContainer",
+) as HTMLDivElement;
 
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsDialog = document.getElementById("settingsDialog");
-const languageSelect = document.getElementById("languageSelect");
+const settingsBtn = document.getElementById("settingsBtn") as HTMLButtonElement;
+const settingsDialog = document.getElementById(
+  "settingsDialog",
+) as HTMLDialogElement;
+const languageSelect = document.getElementById(
+  "languageSelect",
+) as HTMLSelectElement;
 const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 
-startBtn.addEventListener("click", startCapture);
-stopBtn.addEventListener("click", stopCapture);
-clearBtn.addEventListener("click", clearTranscript);
+startBtn?.addEventListener("click", startCapture);
+stopBtn?.addEventListener("click", stopCapture);
+clearBtn?.addEventListener("click", clearTranscript);
 
-settingsBtn.addEventListener("click", () => {
-  settingsDialog.showModal();
+settingsBtn?.addEventListener("click", () => {
+  settingsDialog?.showModal();
 });
 
-cancelSettingsBtn.addEventListener("click", () => {
+cancelSettingsBtn?.addEventListener("click", () => {
   settingsDialog.close();
 });
 
-saveSettingsBtn.addEventListener("click", () => {
-  const language = languageSelect.value;
+saveSettingsBtn?.addEventListener("click", () => {
+  const language = languageSelect?.value;
   chrome.storage.local.set({ transcriptionLanguage: language }, () => {
     console.log(`Language set to ${language}`);
   });
@@ -47,7 +53,9 @@ saveSettingsBtn.addEventListener("click", () => {
 });
 
 function clearTranscript() {
-  transcriptContainer.innerHTML = "";
+  if (transcriptContainer) {
+    transcriptContainer.innerHTML = "";
+  }
 }
 
 function startCapture() {
@@ -99,7 +107,7 @@ function stopCapture() {
     audioCtx = null;
   }
   if (stream) {
-    for (track of stream.getTracks()) {
+    for (const track of stream.getTracks()) {
       track.stop();
     }
     stream = null;
@@ -122,7 +130,7 @@ function resetUI() {
   clearBtn.disabled = false;
 }
 
-function setupAudioProcessing(stream) {
+function setupAudioProcessing(stream: MediaStream) {
   audioCtx = new AudioContext({ sampleRate: 16000 });
   processor = audioCtx.createScriptProcessor(4096, 1, 1);
 
@@ -160,7 +168,7 @@ function openWebSocket() {
   console.log("[WS] Opening:", url);
 
   let partialText = "";
-  let sessionDiv = null;
+  let sessionDiv: HTMLDivElement | null = null;
 
   ws.onopen = () => {
     console.log("[WS] Connected.");
@@ -218,7 +226,7 @@ function openWebSocket() {
   };
 }
 
-function floatTo16BitPCM(float32Array) {
+function floatTo16BitPCM(float32Array: Float32Array) {
   const len = float32Array.length;
   const output = new Int16Array(len);
   for (let i = 0; i < len; i++) {
@@ -229,7 +237,7 @@ function floatTo16BitPCM(float32Array) {
   return output.buffer;
 }
 
-function isSilent(float32Array, threshold = 0.0005) {
+function isSilent(float32Array: Float32Array, threshold = 0.0005) {
   // Option A: compute RMS volume. If below threshold, treat as silence.
   // e.g. threshold ~ 0.0005 => very quiet
   let sum = 0;

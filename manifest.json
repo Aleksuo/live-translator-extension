@@ -14,6 +14,6 @@
     "open_in_tab": true
   },
   "background": {
-    "service_worker": "src/scripts/whisper-service-worker.js"
+    "service_worker": "src/scripts/whisper-service-worker.ts"
   }
 }

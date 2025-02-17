@@ -1,4 +1,4 @@
-document.getElementById("openOptionsBtn").addEventListener("click", () => {
+document.getElementById("openOptionsBtn")?.addEventListener("click", () => {
   const url = chrome.runtime.getURL("options_ui/page.html");
   chrome.windows.create({
     url: url,
