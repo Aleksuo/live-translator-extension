@@ -1,4 +1,9 @@
-import { floatTo16BitPCM, isSilent } from "../utils/audio-utils.js";
+import type {
+  RequestMessage,
+  ResponseMessage,
+  TranscribeRequestMessage,
+} from "../types/message.type.ts";
+import { floatTo16BitPCM, isSilent } from "../utils/audio-utils";
 
 let capturing = false;
 let stream: MediaStream | null = null;
@@ -54,82 +59,16 @@ saveSettingsBtn?.addEventListener("click", () => {
   settingsDialog.close();
 });
 
+function sendMessageToWhisperWorker(
+  message: RequestMessage,
+): Promise<ResponseMessage> {
+  return chrome.runtime.sendMessage(message);
+}
+
 function clearTranscript() {
   if (transcriptContainer) {
     transcriptContainer.innerHTML = "";
   }
-}
-
-function startCapture() {
-  if (capturing) return;
-  capturing = true;
-
-  startBtn.disabled = true;
-  stopBtn.disabled = false;
-  clearBtn.disabled = true;
-
-  // Prompt the user to share a tab (or entire screen)
-  // In Chrome, if user selects a tab and checks "Share tab audio",
-  // you'll get that tab's audio in `stream`.
-  navigator.mediaDevices
-    .getDisplayMedia({
-      audio: true, // allow tab audio
-      video: true, // or "true" in some cases if Chrome demands at least one video track
-    })
-    .then((capturedStream) => {
-      console.log("[Options] getDisplayMedia stream:", capturedStream);
-      stream = capturedStream;
-
-      // Start the 16k pipeline
-      setupAudioProcessing(stream);
-      openWebSocket();
-    })
-    .catch((err) => {
-      console.error("Could not capture tab:", err);
-      alert(`Failed to capture audio: ${err.message}`);
-      resetUI();
-    });
-}
-
-function stopCapture() {
-  if (!capturing) return;
-  capturing = false;
-
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-  clearBtn.disabled = false;
-
-  if (processor) {
-    processor.disconnect();
-    processor.onaudioprocess = null;
-    processor = null;
-  }
-  if (audioCtx) {
-    audioCtx.close();
-    audioCtx = null;
-  }
-  if (stream) {
-    for (const track of stream.getTracks()) {
-      track.stop();
-    }
-    stream = null;
-  }
-  if (ws) {
-    ws.onclose = null;
-    ws.close();
-    ws = null;
-  }
-  if (reconnectTimer) {
-    clearInterval(reconnectTimer);
-    reconnectTimer = null;
-  }
-}
-
-function resetUI() {
-  capturing = false;
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-  clearBtn.disabled = false;
 }
 
 function setupAudioProcessing(stream: MediaStream) {
@@ -144,13 +83,90 @@ function setupAudioProcessing(stream: MediaStream) {
     inputBuffer = event.inputBuffer.getChannelData(0);
     silent = isSilent(inputBuffer);
     console.log(silent);
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      // Check volume or detect if it's basically the same as the last chunk
-      if (!silent) {
-        ws.send(floatTo16BitPCM(inputBuffer));
-      }
+    // Check volume or detect if it's basically the same as the last chunk
+    if (!silent) {
+      sendMessageToWhisperWorker(<TranscribeRequestMessage>{
+        type: "TRANSCRIBE",
+        message: inputBuffer,
+      });
+      //ws.send(floatTo16BitPCM(inputBuffer));
     }
   };
+}
+
+function startCapture() {
+  if (capturing) return;
+  sendMessageToWhisperWorker({
+    type: "START",
+  }).then(() => {
+    capturing = true;
+
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    clearBtn.disabled = true;
+
+    // Prompt the user to share a tab (or entire screen)
+    // In Chrome, if user selects a tab and checks "Share tab audio",
+    // you'll get that tab's audio in `stream`.
+    navigator.mediaDevices
+      .getDisplayMedia({
+        audio: true, // allow tab audio
+        video: true, // or "true" in some cases if Chrome demands at least one video track
+      })
+      .then((capturedStream) => {
+        console.log("[Options] getDisplayMedia stream:", capturedStream);
+        stream = capturedStream;
+
+        // Start the 16k pipeline
+        setupAudioProcessing(stream);
+        //openWebSocket();
+      })
+      .catch((err) => {
+        console.error("Could not capture tab:", err);
+        alert(`Failed to capture audio: ${err.message}`);
+        resetUI();
+      });
+  });
+}
+
+function stopCapture() {
+  if (!capturing) return;
+  sendMessageToWhisperWorker({
+    type: "STOP",
+  }).then(() => {
+    capturing = false;
+
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    clearBtn.disabled = false;
+
+    if (processor) {
+      processor.disconnect();
+      processor.onaudioprocess = null;
+      processor = null;
+    }
+    if (audioCtx) {
+      audioCtx.close();
+      audioCtx = null;
+    }
+    if (stream) {
+      for (const track of stream.getTracks()) {
+        track.stop();
+      }
+      stream = null;
+    }
+    if (reconnectTimer) {
+      clearInterval(reconnectTimer);
+      reconnectTimer = null;
+    }
+  });
+}
+
+function resetUI() {
+  capturing = false;
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+  clearBtn.disabled = false;
 }
 
 function openWebSocket() {
