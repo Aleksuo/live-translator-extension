@@ -35,7 +35,7 @@
     "url": "https://yourwebsite.com"
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.3.3"
+    "@huggingface/transformers": "^3.4.0"
   },
   "type":"module"
 }
