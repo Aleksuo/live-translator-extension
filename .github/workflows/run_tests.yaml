@@ -35,3 +35,19 @@ jobs:
         run: npm ci
       - name: Run Biome format check
         run: npm run format
+  lint:
+    name: Run linter
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.12.2'
+          cache: 'npm'
+      - name: Clean install dependencies
+        run: npm ci
+      - name: Run Biome lint check
+        run: npm run lint
+  
