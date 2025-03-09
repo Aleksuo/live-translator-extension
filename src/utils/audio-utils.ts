@@ -1,14 +1,3 @@
-export function floatTo16BitPCM(float32Array: Float32Array) {
-  const len = float32Array.length;
-  const output = new Int16Array(len);
-  for (let i = 0; i < len; i++) {
-    let s = Math.max(-1, Math.min(1, float32Array[i]));
-    s = s < 0 ? s * 0x8000 : s * 0x7fff;
-    output[i] = s;
-  }
-  return output.buffer;
-}
-
 export function concatenateFloat32Array(
   a: Float32Array<ArrayBufferLike>,
   b: Float32Array<ArrayBufferLike>,

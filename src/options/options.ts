@@ -5,7 +5,7 @@ import type {
   TranscribeRequestMessage,
   TranscribeResponseMessage,
 } from "../types/message.type.ts";
-import { floatTo16BitPCM, isSilent } from "../utils/audio-utils";
+import { isSilent } from "../utils/audio-utils";
 
 let capturing = false;
 let stream: MediaStream | null = null;
