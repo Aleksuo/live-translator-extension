@@ -1,7 +1,9 @@
+import type { AutomaticSpeechRecognitionOutput } from "@huggingface/transformers";
 import type {
   RequestMessage,
   ResponseMessage,
   TranscribeRequestMessage,
+  TranscribeResponseMessage,
 } from "../types/message.type.ts";
 import { floatTo16BitPCM, isSilent } from "../utils/audio-utils";
 
@@ -9,8 +11,8 @@ let capturing = false;
 let stream: MediaStream | null = null;
 let audioCtx: AudioContext | null = null;
 let processor: ScriptProcessorNode | null = null;
-let ws: WebSocket | null = null;
 let reconnectTimer: NodeJS.Timeout | null = null;
+let sessionDiv: HTMLDivElement | null = null;
 let inputBuffer = null;
 let silent = false;
 
@@ -87,11 +89,35 @@ function setupAudioProcessing(stream: MediaStream) {
     if (!silent) {
       sendMessageToWhisperWorker(<TranscribeRequestMessage>{
         type: "TRANSCRIBE",
-        message: inputBuffer,
+        message: Array.from(inputBuffer),
+      }).then((response: ResponseMessage) => {
+        handleTranscribeResponse(response as TranscribeResponseMessage);
       });
-      //ws.send(floatTo16BitPCM(inputBuffer));
     }
   };
+}
+
+function handleTranscribeResponse(message: TranscribeResponseMessage) {
+  const msg = message as TranscribeResponseMessage;
+  console.log(msg);
+  if (!sessionDiv || msg.truncate) {
+    sessionDiv = createNewSessionDiv();
+    const contentDiv = sessionDiv.querySelector(".session-content");
+    if (contentDiv) {
+      contentDiv.textContent = (
+        msg.message as AutomaticSpeechRecognitionOutput
+      ).text;
+      autoScrollToBottom();
+    }
+  } else {
+    const contentDiv = sessionDiv.querySelector(".session-content");
+    if (contentDiv) {
+      contentDiv.textContent = (
+        msg.message as AutomaticSpeechRecognitionOutput
+      ).text;
+      autoScrollToBottom();
+    }
+  }
 }
 
 function startCapture() {
@@ -162,86 +188,29 @@ function stopCapture() {
   });
 }
 
+function createNewSessionDiv() {
+  const sessionDiv = document.createElement("div");
+  sessionDiv.className = "transcription-session";
+
+  const header = document.createElement("h4");
+  header.textContent = "Current Session:";
+  sessionDiv.appendChild(header);
+
+  const content = document.createElement("div");
+  content.className = "session-content";
+  sessionDiv.appendChild(content);
+
+  transcriptContainer.appendChild(sessionDiv);
+  autoScrollToBottom();
+
+  return sessionDiv;
+}
+
 function resetUI() {
   capturing = false;
   startBtn.disabled = false;
   stopBtn.disabled = true;
   clearBtn.disabled = false;
-}
-
-function openWebSocket() {
-  if (!capturing) return;
-  if (reconnectTimer) {
-    clearInterval(reconnectTimer);
-    reconnectTimer = null;
-  }
-
-  const language = "en";
-  const responseFormat = "json";
-  const url = `ws://localhost:8000/v1/audio/transcriptions?language=${encodeURIComponent(language)}&response_format=${encodeURIComponent(responseFormat)}`;
-
-  ws = new WebSocket(url);
-  ws.binaryType = "arraybuffer";
-
-  console.log("[WS] Opening:", url);
-
-  let partialText = "";
-  let sessionDiv: HTMLDivElement | null = null;
-
-  ws.onopen = () => {
-    console.log("[WS] Connected.");
-    // Create a new session block
-    sessionDiv = document.createElement("div");
-    sessionDiv.className = "transcription-session";
-
-    const header = document.createElement("h4");
-    header.textContent = "Current Session:";
-    sessionDiv.appendChild(header);
-
-    const content = document.createElement("div");
-    content.className = "session-content";
-    sessionDiv.appendChild(content);
-
-    transcriptContainer.appendChild(sessionDiv);
-    autoScrollToBottom();
-  };
-
-  ws.onmessage = (msg) => {
-    const data = JSON.parse(msg.data);
-    partialText = data.text || "";
-
-    if (sessionDiv) {
-      const contentDiv = sessionDiv.querySelector(".session-content");
-      if (contentDiv) {
-        contentDiv.textContent = partialText;
-        autoScrollToBottom();
-      }
-    }
-  };
-
-  ws.onerror = (err) => {
-    console.warn("[WS] Error:", err);
-  };
-
-  ws.onclose = () => {
-    console.log("[WS] Closed. Final text:", partialText);
-    if (sessionDiv) {
-      const note = document.createElement("div");
-      note.textContent = "Session closed.";
-      note.className = "session-closed-note";
-      sessionDiv.appendChild(note);
-      autoScrollToBottom();
-    }
-
-    // Reconnect if capturing
-    if (capturing) {
-      reconnectTimer = setInterval(() => {
-        if (!silent) {
-          openWebSocket();
-        }
-      }, 500);
-    }
-  };
 }
 
 function autoScrollToBottom() {

@@ -1,3 +1,4 @@
+import type { AutomaticSpeechRecognitionOutput } from "@huggingface/transformers";
 
 export type RequestMessageType = "STOP" | "START" | "TRANSCRIBE";
 
@@ -7,15 +8,22 @@ export interface RequestMessage {
 
 export interface TranscribeRequestMessage extends RequestMessage {
   type: "TRANSCRIBE";
-  message: Float32Array<ArrayBufferLike>;
+  message: number[];
 }
 
-export type ResponseMessageType = "TRANSCRIBE_RESPONSE";
+export type ResponseMessageType = "TRANSCRIBE_RESPONSE" | "START_RESPONSE";
 export interface ResponseMessage {
   type: ResponseMessageType;
 }
 
 export interface TranscribeResponseMessage extends ResponseMessage {
   type: "TRANSCRIBE_RESPONSE";
-  message: string;
+  message:
+    | AutomaticSpeechRecognitionOutput
+    | AutomaticSpeechRecognitionOutput[];
+  truncate: boolean;
+}
+
+export interface StartResponseMessage extends ResponseMessage {
+  type: "START_RESPONSE";
 }
