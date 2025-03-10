@@ -38,6 +38,7 @@ const settingsDialog = document.getElementById(
 const languageSelect = document.getElementById(
   "languageSelect",
 ) as HTMLSelectElement;
+const taskSelect = document.getElementById("taskSelect") as HTMLSelectElement;
 const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 
@@ -55,9 +56,19 @@ cancelSettingsBtn?.addEventListener("click", () => {
 
 saveSettingsBtn?.addEventListener("click", () => {
   const language = languageSelect?.value;
-  chrome.storage.local.set({ transcriptionLanguage: language }, () => {
-    console.log(`Language set to ${language}`);
-  });
+  const task = taskSelect?.value;
+  chrome.storage.local.set(
+    {
+      options: {
+        language: language,
+        task: task,
+      },
+    },
+    () => {
+      console.log(`Language set to ${language}`);
+      console.log(`Task set to ${task}`);
+    },
+  );
   settingsDialog.close();
 });
 
@@ -103,7 +114,7 @@ function handleTranscribeResponse(message: TranscribeResponseMessage) {
   if (!sessionDiv || msg.truncate) {
     sessionDiv = createNewSessionDiv();
     const contentDiv = sessionDiv.querySelector(".session-content");
-    if (contentDiv) {
+    if (contentDiv && msg.message) {
       contentDiv.textContent = (
         msg.message as AutomaticSpeechRecognitionOutput
       ).text;
@@ -111,7 +122,7 @@ function handleTranscribeResponse(message: TranscribeResponseMessage) {
     }
   } else {
     const contentDiv = sessionDiv.querySelector(".session-content");
-    if (contentDiv) {
+    if (contentDiv && message.message) {
       contentDiv.textContent = (
         msg.message as AutomaticSpeechRecognitionOutput
       ).text;

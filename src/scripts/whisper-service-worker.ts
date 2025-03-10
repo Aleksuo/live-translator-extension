@@ -1,5 +1,6 @@
 import { pipeline, env } from "@huggingface/transformers";
 import type {
+  AutomaticSpeechRecognitionConfig,
   AutomaticSpeechRecognitionPipeline,
   ProgressCallback,
 } from "@huggingface/transformers";
@@ -18,10 +19,34 @@ if (env?.backends?.onnx?.wasm?.numThreads) {
 
 class Pipeline {
   readonly task = "automatic-speech-recognition";
-  readonly model = "Xenova/whisper-tiny.en";
+  readonly model = "Xenova/whisper-tiny";
+  whisperConfiguration: Partial<AutomaticSpeechRecognitionConfig> = {
+    language: undefined,
+    task: "transcribe",
+  };
   buffer: Float32Array<ArrayBufferLike> = new Float32Array(0);
   processing = false;
   instance: Promise<AutomaticSpeechRecognitionPipeline> | null = null;
+
+  async initialize() {
+    const options = await chrome.storage.local.get("options");
+    const { task, language } = options;
+    const config: Partial<AutomaticSpeechRecognitionConfig> = {
+      task,
+      language,
+    };
+    if (language === "Auto") {
+      config.language = undefined;
+    }
+    pipelineInstance.setWhisperConfiguration(config);
+  }
+
+  setWhisperConfiguration(
+    config: Partial<AutomaticSpeechRecognitionConfig>,
+  ): void {
+    this.whisperConfiguration = config;
+  }
+
   async getInstance(
     progress_callback?: ProgressCallback | undefined,
   ): Promise<AutomaticSpeechRecognitionPipeline> {
@@ -36,6 +61,7 @@ class Pipeline {
 }
 
 const pipelineInstance = new Pipeline();
+await pipelineInstance.initialize();
 
 const transcribe = async (audioChunk: Float32Array<ArrayBufferLike>) => {
   pipelineInstance.buffer = concatenateFloat32Array(
@@ -47,7 +73,11 @@ const transcribe = async (audioChunk: Float32Array<ArrayBufferLike>) => {
   }
   pipelineInstance.processing = true;
   const model = await pipelineInstance.getInstance();
-  const result = await model(pipelineInstance.buffer);
+  const result = await model(
+    pipelineInstance.buffer,
+    pipelineInstance.whisperConfiguration,
+  );
+  model;
   pipelineInstance.processing = false;
   return result;
 };
@@ -103,4 +133,21 @@ function RequestMessageListener(): RequestMessageListenerSignature {
     }
   };
 }
+chrome.storage.local.onChanged.addListener((changes) => {
+  const options = changes?.options.newValue as {
+    task: string;
+    language: string;
+  };
+  if (options) {
+    const { task, language } = options;
+    const config: Partial<AutomaticSpeechRecognitionConfig> = {
+      task,
+      language,
+    };
+    if (language === "Auto") {
+      config.language = undefined;
+    }
+    pipelineInstance.setWhisperConfiguration(config);
+  }
+});
 chrome.runtime.onMessage.addListener(RequestMessageListener());
