@@ -6,6 +6,7 @@ import type {
   TranscribeResponseMessage,
 } from "../types/message.type.ts";
 import { isSilent } from "../utils/audio-utils";
+import { DateToHhMmSsString } from "../utils/date-utils";
 
 let capturing = false;
 let stream: MediaStream | null = null;
@@ -101,6 +102,12 @@ function setupAudioProcessing(stream: MediaStream) {
 function handleTranscribeResponse(message: TranscribeResponseMessage) {
   const msg = message as TranscribeResponseMessage;
   if (!sessionDiv || msg.truncate) {
+    if (msg.truncate && sessionDiv) {
+      const footer = document.createElement("div");
+      footer.className = "session-timestamp";
+      footer.textContent = DateToHhMmSsString(new Date());
+      sessionDiv.appendChild(footer);
+    }
     sessionDiv = createNewSessionDiv();
     const contentDiv = sessionDiv.querySelector(".session-content");
     if (contentDiv && msg.message) {
@@ -185,8 +192,9 @@ function createNewSessionDiv() {
   const sessionDiv = document.createElement("div");
   sessionDiv.className = "transcription-session";
 
-  const header = document.createElement("h4");
-  header.textContent = "Current Session:";
+  const header = document.createElement("div");
+  header.className = "session-timestamp";
+  header.textContent = DateToHhMmSsString(new Date());
   sessionDiv.appendChild(header);
 
   const content = document.createElement("div");

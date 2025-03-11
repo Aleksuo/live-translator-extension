@@ -34,18 +34,12 @@ body {
   border-radius: 4px;
 }
 
-.transcription-session h4 {
-  margin: 0 0 5px 0;
-  font-size: 14px;
-  color: #fff;
-}
-
 .session-content {
   font-size: 13px;
   white-space: pre-wrap;
 }
 
-.session-closed-note {
+.session-timestamp {
   margin-top: 5px;
   color: #999;
   font-style: italic;
