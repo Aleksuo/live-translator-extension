@@ -16,14 +16,6 @@ let sessionDiv: HTMLDivElement | null = null;
 let inputBuffer = null;
 let silent = false;
 
-const defaultSettings = {
-  transcriptionLanguage: "en",
-};
-/*
-const settings = await chrome.storage.sync.get().then((items) => {
-  return { ...defaultSettings, ...items };
-});*/
-
 const startBtn = document.getElementById("startBtn") as HTMLButtonElement;
 const stopBtn = document.getElementById("stopBtn") as HTMLButtonElement;
 const clearBtn = document.getElementById("clearBtn") as HTMLButtonElement;
@@ -95,8 +87,6 @@ function setupAudioProcessing(stream: MediaStream) {
   processor.onaudioprocess = (event) => {
     inputBuffer = event.inputBuffer.getChannelData(0);
     silent = isSilent(inputBuffer);
-    console.log(silent);
-    // Check volume or detect if it's basically the same as the last chunk
     if (!silent) {
       sendMessageToWhisperWorker(<TranscribeRequestMessage>{
         type: "TRANSCRIBE",
@@ -110,7 +100,6 @@ function setupAudioProcessing(stream: MediaStream) {
 
 function handleTranscribeResponse(message: TranscribeResponseMessage) {
   const msg = message as TranscribeResponseMessage;
-  console.log(msg);
   if (!sessionDiv || msg.truncate) {
     sessionDiv = createNewSessionDiv();
     const contentDiv = sessionDiv.querySelector(".session-content");
@@ -141,10 +130,6 @@ function startCapture() {
     startBtn.disabled = true;
     stopBtn.disabled = false;
     clearBtn.disabled = true;
-
-    // Prompt the user to share a tab (or entire screen)
-    // In Chrome, if user selects a tab and checks "Share tab audio",
-    // you'll get that tab's audio in `stream`.
     navigator.mediaDevices
       .getDisplayMedia({
         audio: true, // allow tab audio
@@ -153,10 +138,7 @@ function startCapture() {
       .then((capturedStream) => {
         console.log("[Options] getDisplayMedia stream:", capturedStream);
         stream = capturedStream;
-
-        // Start the 16k pipeline
         setupAudioProcessing(stream);
-        //openWebSocket();
       })
       .catch((err) => {
         console.error("Could not capture tab:", err);
