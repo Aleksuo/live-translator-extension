@@ -8,7 +8,12 @@
   "name": "live-translator-extension",
   "description": "An Extension.js example.",
   "version": "0.0.1",
-  "keywords": ["extension", "browser-extension", "web-extension", "template"],
+  "keywords": [
+    "extension",
+    "browser-extension",
+    "web-extension",
+    "template"
+  ],
   "scripts": {
     "dev": "extension dev",
     "start": "extension start",
@@ -21,6 +26,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "extension": "latest",
+    "jest": "^29.7.0",
     "typescript": "^5.7.3"
   },
   "private": true,
