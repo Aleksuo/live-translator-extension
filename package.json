@@ -21,7 +21,8 @@
     "format": "npx @biomejs/biome format",
     "format:write": "npx @biomejs/biome format --write",
     "lint": "npx @biomejs/biome lint",
-    "lint:write": "npx @biomejs/biome lint --write"
+    "lint:write": "npx @biomejs/biome lint --write",
+    "test": "jest"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
