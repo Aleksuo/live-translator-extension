@@ -7,6 +7,10 @@ import type {
 } from "../types/message.type.ts";
 import { isSilent } from "../utils/audio-utils";
 import { DateToHhMmSsString } from "../utils/date-utils";
+import { Notyf } from "notyf";
+import "notyf/notyf.min.css";
+
+const notyf = new Notyf();
 
 let capturing = false;
 let stream: MediaStream | null = null;
@@ -50,19 +54,14 @@ cancelSettingsBtn?.addEventListener("click", () => {
 saveSettingsBtn?.addEventListener("click", () => {
   const language = languageSelect?.value;
   const task = taskSelect?.value;
-  chrome.storage.local.set(
-    {
-      options: {
-        language: language,
-        task: task,
-      },
+  chrome.storage.local.set({
+    options: {
+      language: language,
+      task: task,
     },
-    () => {
-      console.log(`Language set to ${language}`);
-      console.log(`Task set to ${task}`);
-    },
-  );
+  });
   settingsDialog.close();
+  notyf.success("Options saved successfully");
 });
 
 function sendMessageToWhisperWorker(
@@ -74,6 +73,7 @@ function sendMessageToWhisperWorker(
 function clearTranscript() {
   if (transcriptContainer) {
     transcriptContainer.innerHTML = "";
+    notyf.success("Transcript cleared successfully");
   }
 }
 
@@ -148,8 +148,7 @@ function startCapture() {
         setupAudioProcessing(stream);
       })
       .catch((err) => {
-        console.error("Could not capture tab:", err);
-        alert(`Failed to capture audio: ${err.message}`);
+        notyf.error(`Failed to capture audio: ${err.message}`);
         resetUI();
       });
   });
