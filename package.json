@@ -2,13 +2,19 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/extension-js/extension.git",
-    "directory": "examples/init"
+    "url": "https://github.com/Aleksuo/live-translator-extension"
   },
   "name": "live-translator-extension",
-  "description": "An Extension.js example.",
+  "description": "A chrome extension enabling live translation using openai whisper through transformerjs",
   "version": "0.0.1",
-  "keywords": ["extension", "browser-extension", "web-extension", "template"],
+  "keywords": [
+    "extension",
+    "browser-extension",
+    "web-extension",
+    "template",
+    "whisper",
+    "transformerjs"
+  ],
   "scripts": {
     "dev": "extension dev",
     "start": "extension start",
@@ -31,11 +37,6 @@
     "typescript": "^5.7.3"
   },
   "private": true,
-  "author": {
-    "name": "Your Name",
-    "email": "your@email.com",
-    "url": "https://yourwebsite.com"
-  },
   "dependencies": {
     "@huggingface/transformers": "^3.4.0",
     "notyf": "^3.10.0"
