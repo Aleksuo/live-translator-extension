@@ -3,8 +3,7 @@
   "manifest_version": 3,
   "version": "1.0",
   "name": "live-translator-extension",
-  "description": "A minimum extension template. This template includes a manifest file.",
-  "author": "Your Name",
+  "description": "A chrome extension enabling live translation using openai whisper through transformerjs",
   "permissions": ["tabCapture", "activeTab", "storage"],
   "action": {
     "default_popup": "src/popup/popup.html"
