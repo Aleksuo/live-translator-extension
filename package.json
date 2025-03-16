@@ -17,8 +17,8 @@
   ],
   "scripts": {
     "dev": "extension dev",
-    "start": "extension start",
-    "build": "extension build",
+    "start": "npm run build && extension preview",
+    "build": "extension build && node ./patches/patch-service-worker.js",
     "format": "npx @biomejs/biome format",
     "format:write": "npx @biomejs/biome format --write",
     "lint": "npx @biomejs/biome lint",
