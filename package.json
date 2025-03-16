@@ -5,7 +5,7 @@
     "url": "https://github.com/Aleksuo/live-translator-extension"
   },
   "name": "live-translator-extension",
-  "description": "A chrome extension enabling live translation using openai whisper through transformerjs",
+  "description": "A Chrome extension providing real-time translation powered by OpenAI's Whisper model using Transformers.js locally in the browser.",
   "version": "0.0.1",
   "keywords": [
     "extension",
